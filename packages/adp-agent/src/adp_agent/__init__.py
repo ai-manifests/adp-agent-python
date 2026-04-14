@@ -1,0 +1,87 @@
+"""
+adp-agent — Python reference implementation of the Agent Deliberation Protocol runtime.
+
+Public API surface. Import from here, not from submodules.
+"""
+
+from .config import (
+    AgentConfig,
+    JournalBackend,
+    PeerConfig,
+    PeerTransport,
+    AuthConfig,
+    AcbDefaultsConfig,
+    CalibrationAnchorConfig,
+    EvaluatorConfig,
+)
+from .manifest import AgentManifest, DomainAuthority
+from .evaluator import (
+    Evaluator,
+    EvaluationRequest,
+    EvaluationResult,
+    ShellEvaluator,
+    StaticEvaluator,
+)
+from .signing import (
+    generate_key_pair,
+    canonicalize,
+    canonicalize_value,
+    sign_proposal,
+    verify_proposal,
+)
+from .snapshot import (
+    CalibrationSnapshotRecord,
+    CalibrationSnapshotEnvelope,
+    canonical_snapshot_message,
+    sign_snapshot,
+    verify_snapshot,
+    build_snapshot,
+    build_envelope,
+)
+from .journal import (
+    RuntimeJournalStore,
+    DeliberationSlice,
+    JsonlJournalStore,
+    SqliteJournalStore,
+)
+from .deliberation import RuntimeDeliberation, SignedProposal
+from .host import AdpAgentHost
+
+__version__ = "0.1.0"
+
+__all__ = [
+    "AgentConfig",
+    "JournalBackend",
+    "PeerConfig",
+    "PeerTransport",
+    "AuthConfig",
+    "AcbDefaultsConfig",
+    "CalibrationAnchorConfig",
+    "EvaluatorConfig",
+    "AgentManifest",
+    "DomainAuthority",
+    "Evaluator",
+    "EvaluationRequest",
+    "EvaluationResult",
+    "ShellEvaluator",
+    "StaticEvaluator",
+    "generate_key_pair",
+    "canonicalize",
+    "canonicalize_value",
+    "sign_proposal",
+    "verify_proposal",
+    "CalibrationSnapshotRecord",
+    "CalibrationSnapshotEnvelope",
+    "canonical_snapshot_message",
+    "sign_snapshot",
+    "verify_snapshot",
+    "build_snapshot",
+    "build_envelope",
+    "RuntimeJournalStore",
+    "DeliberationSlice",
+    "JsonlJournalStore",
+    "SqliteJournalStore",
+    "RuntimeDeliberation",
+    "SignedProposal",
+    "AdpAgentHost",
+]

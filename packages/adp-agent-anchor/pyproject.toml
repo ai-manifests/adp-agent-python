@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adp-agent-anchor"
+version = "0.1.0"
+description = "Neo3 blockchain anchor for ADP calibration snapshots. Optional extension to adp-agent (Python runtime) that periodically commits signed calibration snapshots to a Neo3-compatible chain."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.11"
+authors = [
+    { name = "David H. Friedel Jr.", email = "dave@marketally.com" }
+]
+maintainers = [
+    { name = "MarketAlly", email = "dave@marketally.com" }
+]
+keywords = ["adp", "calibration-anchor", "neo3", "blockchain", "tamper-evidence"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "adp-agent>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
+
+[project.urls]
+Homepage = "https://adp-manifest.dev"
+Repository = "https://git.marketally.com/ai-manifests/adp-agent-python"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

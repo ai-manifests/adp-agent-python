@@ -1,0 +1,50 @@
+name: Build and Publish Python Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: linux
+    steps:
+      - name: Checkout
+        run: |
+          git clone "${{ github.server_url }}/${{ github.repository }}.git" .
+          git checkout ${{ github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Configure pip to use Gitea PyPI feed
+        run: |
+          mkdir -p ~/.config/pip
+          cat > ~/.config/pip/pip.conf <<EOF
+          [global]
+          extra-index-url = https://git.marketally.com/api/packages/ai-manifests/pypi/simple
+          EOF
+
+      - name: Install build tools
+        run: python -m pip install --upgrade build twine
+
+      - name: Build adp-agent
+        working-directory: packages/adp-agent
+        run: python -m build
+
+      - name: Build adp-agent-anchor
+        working-directory: packages/adp-agent-anchor
+        run: python -m build
+
+      - name: Publish to Gitea PyPI
+        env:
+          TWINE_USERNAME: gitea
+          TWINE_PASSWORD: ${{ secrets.GITEATOKEN }}
+        run: |
+          python -m twine upload \
+            --repository-url https://git.marketally.com/api/packages/ai-manifests/pypi \
+            --skip-existing \
+            packages/adp-agent/dist/* packages/adp-agent-anchor/dist/*
