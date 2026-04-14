@@ -42,7 +42,11 @@ jobs:
           TWINE_USERNAME: gitea
           TWINE_PASSWORD: ${{ secrets.GITEATOKEN }}
         run: |
+          # Gitea's PyPI implementation rejects --skip-existing as an
+          # "unsupported configuration," so if this run tries to upload a
+          # version that already exists, twine will fail loudly. Bump the
+          # version in both packages/*/pyproject.toml and re-tag to recover.
           /tmp/build-venv/bin/python -m twine upload \
             --repository-url https://git.marketally.com/api/packages/ai-manifests/pypi \
-            --skip-existing \
+            --non-interactive \
             packages/adp-agent/dist/* packages/adp-agent-anchor/dist/*
