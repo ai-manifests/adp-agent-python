@@ -43,10 +43,36 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.GITEATOKEN }}
         run: |
           # Gitea's PyPI implementation rejects --skip-existing as an
-          # "unsupported configuration," so if this run tries to upload a
-          # version that already exists, twine will fail loudly. Bump the
-          # version in both packages/*/pyproject.toml and re-tag to recover.
+          # "unsupported configuration," so we invoke twine plainly and
+          # detect "already exists" errors in the output instead. That
+          # makes re-running the workflow against an existing tag a
+          # no-op for Gitea while still letting the public PyPI step
+          # below run cleanly.
+          set +e
           /tmp/build-venv/bin/python -m twine upload \
             --repository-url https://git.marketally.com/api/packages/ai-manifests/pypi \
+            --non-interactive \
+            packages/adp-agent/dist/* packages/adp-agent-anchor/dist/* \
+            2>&1 | tee /tmp/gitea-upload.log
+          STATUS=${PIPESTATUS[0]}
+          if [ "$STATUS" -ne 0 ]; then
+            if grep -qiE "already exists|file already|version already" /tmp/gitea-upload.log; then
+              echo "::notice::Gitea PyPI upload skipped: version already published"
+              exit 0
+            fi
+            exit "$STATUS"
+          fi
+
+      - name: Publish to public PyPI
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          # Public PyPI is append-only and permanent — a version can never
+          # be replaced, only yanked. The step is tag-gated (not run on
+          # workflow_dispatch) so accidental manual re-runs don't attempt
+          # a re-upload and fail the whole workflow.
+          /tmp/build-venv/bin/python -m twine upload \
             --non-interactive \
             packages/adp-agent/dist/* packages/adp-agent-anchor/dist/*
