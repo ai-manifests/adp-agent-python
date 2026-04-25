@@ -11,10 +11,10 @@ license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.11"
 authors = [
-    { name = "David H. Friedel Jr.", email = "dave@marketally.com" }
+    { name = "David H. Friedel Jr.", email = "dave@marketally.ai" }
 ]
 maintainers = [
-    { name = "MarketAlly", email = "dave@marketally.com" }
+    { name = "MarketAlly Pte Ltd", email = "dave@marketally.ai" }
 ]
 keywords = ["adp", "calibration-anchor", "neo3", "blockchain", "tamper-evidence"]
 classifiers = [
