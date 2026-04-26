@@ -1,5 +1,11 @@
 # adp-agent-python
 
+[![adp-agent](https://img.shields.io/pypi/v/adp-agent.svg?label=adp-agent)](https://pypi.org/project/adp-agent/)
+[![adp-agent-anchor](https://img.shields.io/pypi/v/adp-agent-anchor.svg?label=adp-agent-anchor)](https://pypi.org/project/adp-agent-anchor/)
+[![Downloads](https://img.shields.io/pypi/dm/adp-agent.svg?label=adp-agent%20downloads)](https://pypi.org/project/adp-agent/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Spec](https://img.shields.io/badge/spec-adp--manifest.dev-informational)](https://adp-manifest.dev)
+
 Python / FastAPI reference implementation of the [Agent Deliberation Protocol](https://adp-manifest.dev). Monorepo for two PyPI packages, sister project to the TypeScript [`@ai-manifests/adp-agent`](https://github.com/ai-manifests/adp-agent) and the C# [`Adp.Agent`](https://github.com/ai-manifests/adp-agent-csharp) runtimes.
 
 | Package | Description |

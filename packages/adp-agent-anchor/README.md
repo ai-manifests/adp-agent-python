@@ -1,5 +1,11 @@
 # adp-agent-anchor
 
+[![PyPI](https://img.shields.io/pypi/v/adp-agent-anchor.svg?label=PyPI)](https://pypi.org/project/adp-agent-anchor/)
+[![Downloads](https://img.shields.io/pypi/dm/adp-agent-anchor.svg)](https://pypi.org/project/adp-agent-anchor/)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://pypi.org/project/adp-agent-anchor/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Spec](https://img.shields.io/badge/spec-adp--manifest.dev-informational)](https://adp-manifest.dev)
+
 Optional Neo3 blockchain anchor for [`adp-agent`](https://github.com/ai-manifests/adp-agent-python) (Python runtime). Commits signed calibration snapshots to a Neo3-compatible chain on a schedule for third-party tamper evidence.
 
 ```bash

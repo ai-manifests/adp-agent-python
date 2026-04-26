@@ -1,5 +1,11 @@
 # adp-agent
 
+[![PyPI](https://img.shields.io/pypi/v/adp-agent.svg?label=PyPI)](https://pypi.org/project/adp-agent/)
+[![Downloads](https://img.shields.io/pypi/dm/adp-agent.svg)](https://pypi.org/project/adp-agent/)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://pypi.org/project/adp-agent/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Spec](https://img.shields.io/badge/spec-adp--manifest.dev-informational)](https://adp-manifest.dev)
+
 Python / FastAPI reference implementation of the [Agent Deliberation Protocol](https://adp-manifest.dev). Sister project to the TypeScript [`@ai-manifests/adp-agent`](https://github.com/ai-manifests/adp-agent) and the C# [`Adp.Agent`](https://github.com/ai-manifests/adp-agent-csharp) runtimes — same wire format, same cross-language signing interop.
 
 ## Install
