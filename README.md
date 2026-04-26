@@ -1,6 +1,6 @@
 # adp-agent-python
 
-Python / FastAPI reference implementation of the [Agent Deliberation Protocol](https://adp-manifest.dev). Monorepo for two PyPI packages, sister project to the TypeScript [`@ai-manifests/adp-agent`](https://git.marketally.com/ai-manifests/adp-agent) and the C# [`Adp.Agent`](https://git.marketally.com/ai-manifests/adp-agent-csharp) runtimes.
+Python / FastAPI reference implementation of the [Agent Deliberation Protocol](https://adp-manifest.dev). Monorepo for two PyPI packages, sister project to the TypeScript [`@ai-manifests/adp-agent`](https://github.com/ai-manifests/adp-agent) and the C# [`Adp.Agent`](https://github.com/ai-manifests/adp-agent-csharp) runtimes.
 
 | Package | Description |
 |---|---|
@@ -8,9 +8,9 @@ Python / FastAPI reference implementation of the [Agent Deliberation Protocol](h
 | [`adp-agent-anchor`](packages/adp-agent-anchor) | Optional Neo3 blockchain anchor — periodically commits signed calibration snapshots to a Neo3-compatible chain for third-party tamper evidence. |
 
 Both packages depend on the Python reference libraries:
-- [`adj-manifest`](https://git.marketally.com/ai-manifests/adj-ref-lib-py)
-- [`adp-manifest`](https://git.marketally.com/ai-manifests/adp-ref-lib-py)
-- [`acb-manifest`](https://git.marketally.com/ai-manifests/acb-ref-lib-py)
+- [`adj-manifest`](https://github.com/ai-manifests/adj-ref-lib-py)
+- [`adp-manifest`](https://github.com/ai-manifests/adp-ref-lib-py)
+- [`acb-manifest`](https://github.com/ai-manifests/acb-ref-lib-py)
 
 ## Install
 
@@ -43,7 +43,7 @@ host = AdpAgentHost(config)
 await host.run()
 ```
 
-See [`adp-agent-template-python`](https://git.marketally.com/ai-manifests/adp-agent-template-python) for a forkable starter.
+See [`adp-agent-template-python`](https://github.com/ai-manifests/adp-agent-template-python) for a forkable starter.
 
 ## Dev
 

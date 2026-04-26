@@ -1,6 +1,6 @@
 # adp-agent
 
-Python / FastAPI reference implementation of the [Agent Deliberation Protocol](https://adp-manifest.dev). Sister project to the TypeScript [`@ai-manifests/adp-agent`](https://git.marketally.com/ai-manifests/adp-agent) and the C# [`Adp.Agent`](https://git.marketally.com/ai-manifests/adp-agent-csharp) runtimes — same wire format, same cross-language signing interop.
+Python / FastAPI reference implementation of the [Agent Deliberation Protocol](https://adp-manifest.dev). Sister project to the TypeScript [`@ai-manifests/adp-agent`](https://github.com/ai-manifests/adp-agent) and the C# [`Adp.Agent`](https://github.com/ai-manifests/adp-agent-csharp) runtimes — same wire format, same cross-language signing interop.
 
 ## Install
 
@@ -65,7 +65,7 @@ The `AdpAgentHost` class serves:
 - `GET  /adj/v0/entries`
 - `POST /api/budget`
 
-The adopter implements an `Evaluator` (the function that produces votes) and hands it to the host. See [`adp-agent-template-python`](https://git.marketally.com/ai-manifests/adp-agent-template-python) for the full starter pattern.
+The adopter implements an `Evaluator` (the function that produces votes) and hands it to the host. See [`adp-agent-template-python`](https://github.com/ai-manifests/adp-agent-template-python) for the full starter pattern.
 
 ## With optional chain anchoring
 

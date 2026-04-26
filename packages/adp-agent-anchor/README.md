@@ -1,6 +1,6 @@
 # adp-agent-anchor
 
-Optional Neo3 blockchain anchor for [`adp-agent`](https://git.marketally.com/ai-manifests/adp-agent-python) (Python runtime). Commits signed calibration snapshots to a Neo3-compatible chain on a schedule for third-party tamper evidence.
+Optional Neo3 blockchain anchor for [`adp-agent`](https://github.com/ai-manifests/adp-agent-python) (Python runtime). Commits signed calibration snapshots to a Neo3-compatible chain on a schedule for third-party tamper evidence.
 
 ```bash
 pip install adp-agent adp-agent-anchor

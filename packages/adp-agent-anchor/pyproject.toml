@@ -11,10 +11,10 @@ license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.11"
 authors = [
-    { name = "David H. Friedel Jr.", email = "dave@marketally.ai" }
+    { name = "David H. Friedel Jr.", email = "dev@ai-manifests.org" }
 ]
 maintainers = [
-    { name = "MarketAlly Pte Ltd", email = "dave@marketally.ai" }
+    { name = "MarketAlly Pte Ltd", email = "dev@ai-manifests.org" }
 ]
 keywords = ["adp", "calibration-anchor", "neo3", "blockchain", "tamper-evidence"]
 classifiers = [
@@ -39,7 +39,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://adp-manifest.dev"
-Repository = "https://git.marketally.com/ai-manifests/adp-agent-python"
+Repository = "https://github.com/ai-manifests/adp-agent-python"
 
 [tool.setuptools.packages.find]
 where = ["src"]
