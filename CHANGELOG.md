@@ -5,6 +5,60 @@ All notable changes to `adp-agent` (Python) and `adp-agent-anchor` (Python) are 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-05-02
+
+### Fixed (breaking default change) — ADP §7.2 / §7.3 terminal state classification
+
+`0.4.x` and earlier hardcoded `determine_termination(tally, has_reversible_subset=True)`
+in `PeerDeliberation.run`, which meant **every non-converged deliberation
+was classified as `partial_commit`**, regardless of whether the action was
+actually decomposable. ADP §7.2 explicitly requires both that the action have
+independently-executable sub-actions AND that a reversible sub-action meet
+simple majority on its own sub-tally; without those, the spec-correct terminal
+state is `deadlocked` (§7.3).
+
+The misclassification meant federation-health metrics (notably any "deadlock
+rate" derived metric) read zero against federations that were in fact
+deadlocking, and any downstream escalation logic that fired on `deadlocked`
+(per §7.3 — "the deliberation is escalated with the full debate trace")
+never triggered.
+
+### Added
+- New optional callback on `PeerDeliberationOptions`:
+  ```python
+  has_reversible_subset: Callable[[ActionDescriptor, TallyResult], bool] | None = None
+  ```
+  The runner invokes this with the final tally before classification. When
+  omitted (or returns `False`), non-converged outcomes resolve as
+  `deadlocked`. When the callback returns `True`, they resolve as
+  `partial_commit`. Decomposition is action-kind-specific, so the decision
+  belongs to the caller — the runner does not attempt to recompute a
+  sub-tally on its own.
+
+### Changed (breaking default)
+- Without an explicit `has_reversible_subset` callback, non-converged
+  deliberations now resolve as **`deadlocked`** (was `partial_commit`).
+  This is the spec-correct default for atomic actions
+  (`merge_pull_request`, `deploy`, `revoke_token`, …) which is the vast
+  majority of real-world deliberations.
+
+### Migration
+- Adopters whose actions are genuinely decomposable
+  (`apply_terraform_plan` with per-resource sub-actions, batched-config-change
+  PRs with per-file sub-actions, etc.) must add `has_reversible_subset` to
+  their `PeerDeliberationOptions` and return `True` only when both
+  conditions in §7.2 hold.
+- Adopters relying on the `partial_commit` label without actually having a
+  reversible subset were already in spec violation; the new default surfaces
+  this explicitly. Their `deliberation_closed.termination` values will flip
+  from `partial_commit` to `deadlocked` for any deliberation that hits the
+  non-converged path. If escalation handlers were keyed on `partial_commit`,
+  rewire them to fire on `deadlocked`.
+
+### Tests
+- `tests/test_peer_deliberation_termination.py` — covers default-deadlocked,
+  explicit-partial-commit, and callback argument shape.
+
 ## [0.4.0] - 2026-05-02
 
 > **Version alignment.** This release jumps the Python library from

@@ -14,7 +14,7 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 from acb_manifest.entries import BudgetCommitted, SettlementRecorded
 from acb_manifest.habit_memory import HistoricalDeliberation, compute_habit_discount
@@ -66,9 +66,24 @@ class PeerDeliberationOptions:
     Optional run-time options for :meth:`PeerDeliberation.run`. Mirrors
     the TS ``DeliberationRunOptions`` and the C#
     ``PeerDeliberationOptions``.
+
+    :param budget: optional ACB budget that funds this deliberation.
+    :param habit_history: pre-loaded prior deliberations for ACB habit
+        memory; when ``None``, the runner falls back to scanning the
+        local journal if it exposes ``get_all_entries``.
+    :param has_reversible_subset: ADP §7.2 / §7.3 callback. Returns
+        ``True`` when the action under deliberation has a reversible
+        subset that can independently commit when convergence on the
+        whole action fails. Default ``None`` → treated as ``False``
+        → non-converged outcomes resolve as ``DEADLOCKED``. Adopters
+        with decomposable actions plug their own logic and return
+        ``True`` only when (a) the action's kind is decomposable AND
+        (b) the reversible subset has been verified to meet simple
+        majority on its own sub-tally.
     """
     budget: BudgetCommitted | None = None
     habit_history: list[HistoricalDeliberation] | None = None
+    has_reversible_subset: Callable[[ActionDescriptor, Any], bool] | None = None
 
 
 @dataclass(frozen=True)
@@ -281,7 +296,17 @@ class PeerDeliberation:
             self._tallies.append(tally)
 
         # 5. Close
-        status = self._orchestrator.determine_termination(tally, has_reversible_subset=True)
+        # ADP §7.2 / §7.3: reversibility-subset detection is the caller's
+        # responsibility because decomposition is action-kind specific.
+        # Default-None → treated as False → atomic-action non-convergence
+        # resolves as DEADLOCKED. Adopters with decomposable actions plug
+        # their own callback in PeerDeliberationOptions.
+        reversible_subset = (
+            opts.has_reversible_subset(action, tally)
+            if opts.has_reversible_subset is not None
+            else False
+        )
+        status = self._orchestrator.determine_termination(tally, has_reversible_subset=reversible_subset)
         self._journal_entries.append(DeliberationClosed(
             entry_id=_new_entry_id(),
             entry_type=EntryType.DELIBERATION_CLOSED,
