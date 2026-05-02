@@ -5,6 +5,22 @@ All notable changes to `adp-agent` (Python) and `adp-agent-anchor` (Python) are 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-05-02 (anchor only)
+
+### Fixed (packaging) — `adp-agent-anchor`
+- **`adp-agent` dependency tightened from `>=0.1.0` to `~=0.5.0`** (i.e.
+  `>=0.5.0,<0.6.0`). The previous unbounded floor allowed a future major
+  bump of `adp-agent` to silently satisfy the anchor's resolver, even
+  when the runtime contract had changed. The two packages are released in
+  lockstep across language ports; the dependency spec now reflects that
+  contract. `adp-agent` itself is unchanged at `0.5.0`.
+
+### Migration
+- Consumers pinning both packages to `0.5.0` are unaffected — pip resolves
+  `adp-agent==0.5.0` against `~=0.5.0` cleanly. Consumers who relied on
+  pulling an older `adp-agent` (`0.1.x` / `0.4.x`) under a current anchor
+  must now upgrade `adp-agent` to `0.5.x`.
+
 ## [0.5.0] - 2026-05-02
 
 ### Fixed (breaking default change) — ADP §7.2 / §7.3 terminal state classification
