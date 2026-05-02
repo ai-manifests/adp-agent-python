@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adp-agent-anchor"
-version = "0.5.1"
+version = "0.6.0"
 description = "Neo3 blockchain anchor for ADP calibration snapshots. Optional extension to adp-agent (Python runtime) that periodically commits signed calibration snapshots to a Neo3-compatible chain."
 readme = "README.md"
 license = "Apache-2.0"
@@ -28,7 +28,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "adp-agent~=0.5.0",
+    "adp-agent~=0.6.0",
 ]
 
 [project.optional-dependencies]

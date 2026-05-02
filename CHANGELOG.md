@@ -5,6 +5,49 @@ All notable changes to `adp-agent` (Python) and `adp-agent-anchor` (Python) are 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-05-02 (anchor lockstep)
+
+### Changed — `adp-agent-anchor`
+- `adp-agent` dependency bumped from `~=0.5.0` to `~=0.6.0` to track the
+  runtime's new `llm` evaluator kind. No code changes in the anchor
+  scheduler; lockstep version bump.
+
+### Added — `llm` evaluator kind
+
+`EvaluatorConfig(kind="llm")` lets an agent vote via an LLM provider
+(Anthropic or OpenAI) instead of a shell command or static defaults. The
+evaluator forces a structured response so the runtime always receives a
+valid `EvaluationResult`:
+
+- **Anthropic**: tool_use forced output (`tool_choice={"type": "tool", "name": "submit_vote"}`).
+  System prompt is marked `cache_control={"type": "ephemeral"}` so identical
+  system prompts across actions hit the prompt cache.
+- **OpenAI**: Structured Outputs (`response_format={"type": "json_schema",
+  "strict": True}`).
+
+**New module:** `adp_agent.llm_evaluator` with `LlmEvaluator` class and
+`render_template` function. Both re-exported from `adp_agent`.
+
+**Config additions on `EvaluatorConfig`** (consulted only when `kind == "llm"`):
+- `provider`: `"anthropic"` or `"openai"`
+- `model`: provider model id (e.g. `claude-opus-4-7`, `gpt-5`)
+- `system_prompt`, `user_template` (with placeholders `{action.kind}`,
+  `{action.target}`, `{action.parameters}`, `{agent.id}`, `{agent.decisionClass}`)
+- `max_tokens` (default 1024), `temperature` (default 0.0)
+
+API keys are read from environment (`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`)
+— deliberately not part of `EvaluatorConfig` so config files can be
+committed without secrets.
+
+### Dependencies
+- Added `httpx>=0.27` as a direct runtime dependency (was previously a
+  dev-only dep). The LLM evaluator uses it for outbound provider calls.
+
+### Tests
+- `tests/test_llm_evaluator.py` — 11 tests covering template substitution,
+  both providers' happy paths, missing keys, malformed responses, and
+  HTTP-error fallback. All 27 tests in the agent suite pass.
+
 ## [0.5.1] - 2026-05-02 (anchor only)
 
 ### Fixed (packaging) — `adp-agent-anchor`

@@ -22,6 +22,7 @@ from .evaluator import (
     ShellEvaluator,
     StaticEvaluator,
 )
+from .llm_evaluator import LlmEvaluator, render_template
 from .signing import (
     generate_key_pair,
     canonicalize,
@@ -62,7 +63,7 @@ from .peer_deliberation import (
 )
 from .host import AdpAgentHost
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 __all__ = [
     "AgentConfig",
@@ -80,6 +81,8 @@ __all__ = [
     "EvaluationResult",
     "ShellEvaluator",
     "StaticEvaluator",
+    "LlmEvaluator",
+    "render_template",
     "generate_key_pair",
     "canonicalize",
     "canonicalize_value",

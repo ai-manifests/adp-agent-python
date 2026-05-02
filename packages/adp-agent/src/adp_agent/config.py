@@ -58,10 +58,28 @@ class CalibrationAnchorConfig:
 @dataclass(frozen=True)
 class EvaluatorConfig:
     """Strategy-pattern evaluator config."""
-    kind: str = "static"  # "shell" | "static" | custom
+    kind: str = "static"  # "shell" | "static" | "llm" | custom
     command: str | None = None
     timeout_ms: int = 60_000
     parse_output: str = "exit-code"  # "exit-code" | "json"
+
+    # --- LLM evaluator fields (kind: 'llm') ---
+    # Which LLM API to call.
+    provider: str | None = None  # "anthropic" | "openai"
+    # Provider model id (e.g. "claude-opus-4-7", "gpt-5").
+    model: str | None = None
+    # System prompt — the agent's identity and judging criteria. Stable
+    # across actions, so providers may cache it server-side (Anthropic
+    # prompt caching is enabled when this is set).
+    system_prompt: str | None = None
+    # User-message template. Placeholders substituted at call time:
+    # {action.kind}, {action.target}, {action.parameters}, {agent.id},
+    # {agent.decisionClass}.
+    user_template: str | None = None
+    # Max tokens for the response.
+    max_tokens: int = 1024
+    # Sampling temperature (default 0 — deterministic).
+    temperature: float = 0.0
 
 
 @dataclass(frozen=True)

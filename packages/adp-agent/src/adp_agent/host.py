@@ -17,6 +17,7 @@ from fastapi import FastAPI
 from .config import AgentConfig, JournalBackend
 from .deliberation import RuntimeDeliberation
 from .evaluator import Evaluator, ShellEvaluator, StaticEvaluator
+from .llm_evaluator import LlmEvaluator
 from .journal import JsonlJournalStore, RuntimeJournalStore, SqliteJournalStore
 from .middleware import AuthMiddleware, RateLimitMiddleware
 from .routing import register_routes
@@ -171,6 +172,8 @@ class AdpAgentHost:
             return ShellEvaluator(config)
         if config.evaluator.kind == "static":
             return StaticEvaluator(config)
+        if config.evaluator.kind == "llm":
+            return LlmEvaluator(config)
         raise ValueError(
             f"Unknown evaluator kind '{config.evaluator.kind}'. "
             "Pass a custom Evaluator to AdpAgentHost(..., evaluator=...) instead."
