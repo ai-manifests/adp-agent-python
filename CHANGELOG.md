@@ -5,6 +5,92 @@ All notable changes to `adp-agent` (Python) and `adp-agent-anchor` (Python) are 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-05-02
+
+> **Version alignment.** This release jumps the Python library from
+> `0.1.x` straight to `0.4.0` to align language ports across the family
+> (`@ai-manifests/adp-agent@0.4.0` TS, `Adp.Agent@0.4.0` C#,
+> `adp-agent==0.4.0` Python). All three publish the same feature surface
+> for the distributed deliberation runtime; the version number is now a
+> single feature-level marker across all language ports rather than three
+> independent counters. Python 0.2.0 / 0.3.0 were never published;
+> consumers move from `0.1.0` directly to `0.4.0`.
+
+### Added — Distributed deliberation runtime (feature parity with `@ai-manifests/adp-agent` 0.4.0)
+
+The `0.1.x` Python port shipped the single-agent proposal path only. This
+release brings full feature parity with the TypeScript reference runtime's
+peer-to-peer deliberation state machine.
+
+**New modules in `adp_agent`:**
+- `transport` — `PeerTransport` Protocol with `register_agent`,
+  `fetch_manifest`, `fetch_calibration`, `request_proposal`,
+  `send_falsification`, `push_journal_entries`. `register_agent` is the
+  structural fix for the self-URL → self-agent-id binding bug described
+  below. `HttpTransport` is the `httpx`-backed implementation; outbound
+  auth headers are resolved via `peer_auth_headers`.
+- `contribution` — `ContributionTracker` records per-agent
+  participation, falsification acknowledgements, and dissent-quality
+  flags. Builds the per-agent `ParticipantContribution` list the
+  `acb_manifest.settlement.build_settlement_record` consumes for
+  `default-v0` distribution. `compute_load_bearing_agents` matches the
+  TS runtime's counterfactual.
+- `peer_deliberation` — `PeerDeliberation` is the full state machine
+  driver. Discovers peers, registers self, requests proposals (peers +
+  self), tallies via `adp_manifest.DeliberationOrchestrator`, runs
+  belief-update rounds, emits `RoundEvent` entries (`FalsificationEvidence`,
+  `Acknowledge`, `Reject`, `Amend`, `Revise`), produces a
+  `DeliberationClosed` entry, and optionally produces an ACB
+  `SettlementRecorded` via `acb_manifest.settlement.build_settlement_record`.
+  Returns `PeerDeliberationResult` with the full transcript.
+  `PeerDeliberationOptions` accepts an optional `BudgetCommitted` and a
+  pre-loaded habit-history list.
+
+### Fixed — Initiator self-proposal 401 under bearer-token auth
+
+This is the architectural bug `0.2.0` exists to fix in the Python library
+(it shipped untouched in `0.1.x` because the distributed deliberation
+runtime wasn't ported yet).
+
+A deliberation runner that authenticates outbound peer calls with
+per-peer bearer tokens needs a URL → agent-id map so each call resolves
+the right token from `AuthConfig.peer_tokens`. The map is populated as
+a side-effect of `fetch_manifest` for peers, but the initiator never
+fetches its own manifest — it already knows what's in it. So the self
+URL stayed unbound, outgoing self-proposal calls (and the self-journal
+calibration fetch, and the journal gossip push) fell back to the
+wildcard `'*'` lookup, which produced no `Authorization` header, which
+made the agent's own auth middleware reject the call with `401`. The
+deliberation aborted with `fetch failed` before any journal entries
+were written.
+
+The fix: `PeerDeliberation.run` now calls
+`self._transport.register_agent(self_url, self._self.agent_id)`
+immediately after binding the self URL in its internal `peer_url_map`,
+so subsequent self-proposal and self-journal calls resolve
+`peer_tokens[self.agent_id]` correctly. Regression test:
+`tests/test_peer_transport.py`.
+
+### Changed (note)
+
+- ACB `BudgetCommitted` and `SettlementRecorded` entries are returned
+  out-of-band in `PeerDeliberationResult.settlement` rather than
+  written to the `RuntimeJournalStore` (which only accepts
+  `adj_manifest.entries.JournalEntry`). Callers that want a unified
+  Adj+Acb journal wire the settlement entry to a separate ACB store
+  or to a unified persistence layer of their choice. The TS runtime
+  appends ACB entries to the same journal because its `JournalStore`
+  interface is type-agnostic; the Python port keeps the Adj-only
+  interface and surfaces ACB entries explicitly.
+
+### Migration
+
+- Adopters who relied on the `0.1.x` single-agent path (`POST /api/propose`
+  + `POST /api/record-outcome`) need no changes — that path is unchanged.
+- Adopters who want the distributed path now wire `PeerDeliberation` into
+  their own `POST /api/deliberate` handler. The single-agent
+  `RuntimeDeliberation` and existing routing remain backward-compatible.
+
 ## [0.1.0] - 2026-04-14
 
 ### Added

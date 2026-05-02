@@ -45,9 +45,24 @@ from .journal import (
     SqliteJournalStore,
 )
 from .deliberation import RuntimeDeliberation, SignedProposal
+from .transport import (
+    PeerTransport as PeerTransportProtocol,
+    HttpTransport,
+    PeerProposalResponse,
+    FalsificationResponse,
+    get_peer_token,
+    peer_auth_headers,
+)
+from .contribution import ContributionTracker, compute_load_bearing_agents
+from .peer_deliberation import (
+    PeerDeliberation,
+    PeerDeliberationOptions,
+    PeerDeliberationResult,
+    ProposalSummary,
+)
 from .host import AdpAgentHost
 
-__version__ = "0.1.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "AgentConfig",
@@ -83,5 +98,17 @@ __all__ = [
     "SqliteJournalStore",
     "RuntimeDeliberation",
     "SignedProposal",
+    "PeerTransportProtocol",
+    "HttpTransport",
+    "PeerProposalResponse",
+    "FalsificationResponse",
+    "get_peer_token",
+    "peer_auth_headers",
+    "ContributionTracker",
+    "compute_load_bearing_agents",
+    "PeerDeliberation",
+    "PeerDeliberationOptions",
+    "PeerDeliberationResult",
+    "ProposalSummary",
     "AdpAgentHost",
 ]
