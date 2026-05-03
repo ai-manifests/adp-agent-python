@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adp-agent"
+version = "0.6.3"
+description = "Reference implementation of the Agent Deliberation Protocol (ADP). Python/FastAPI runtime for agents that deliberate, sign proposals, journal outcomes, and publish signed calibration snapshots."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.11"
+authors = [
+    { name = "David H. Friedel Jr.", email = "dev@ai-manifests.org" }
+]
+maintainers = [
+    { name = "MarketAlly Pte Ltd", email = "dev@ai-manifests.org" }
+]
+keywords = ["adp", "agent-deliberation-protocol", "multi-agent", "consensus", "calibration"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: FastAPI",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "adj-manifest>=0.1.0",
+    "adp-manifest>=0.1.0",
+    "acb-manifest>=0.1.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "cryptography>=43.0.0",
+    "pydantic>=2.9.0",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.27",
+]
+
+[project.urls]
+Homepage = "https://adp-manifest.dev"
+Repository = "https://github.com/ai-manifests/adp-agent-python"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
