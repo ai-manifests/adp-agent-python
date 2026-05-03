@@ -107,3 +107,10 @@ class AgentConfig:
     calibration_anchor: CalibrationAnchorConfig | None = None
     evaluator: EvaluatorConfig | None = None
     initiator: bool = False
+    # Override the URL published as `manifest.journal_endpoint`. By default
+    # the manifest publishes `http://{domain}:{port}/adj/v0`, which is
+    # correct for peer-to-peer calls inside the same network. When the
+    # agent sits behind a TLS-terminating proxy (Cloudflare, Caddy,
+    # ingress controller), external peers can't reach the internal port
+    # and need the proxy URL — e.g. `https://my-agent.example.com/adj/v0`.
+    public_journal_endpoint: str | None = None

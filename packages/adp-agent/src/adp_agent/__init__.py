@@ -63,7 +63,7 @@ from .peer_deliberation import (
 )
 from .host import AdpAgentHost
 
-__version__ = "0.6.2"
+__version__ = "0.6.3"
 
 __all__ = [
     "AgentConfig",

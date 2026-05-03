@@ -5,6 +5,22 @@ All notable changes to `adp-agent` (Python) and `adp-agent-anchor` (Python) are 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-05-02
+
+### Added — `AgentConfig.public_journal_endpoint`
+
+`manifest.journal_endpoint` defaulted to `http://{domain}:{port}/adj/v0`,
+correct for peer-to-peer calls inside the same network but wrong for
+external callers (registry audit, peer federations) when the agent
+sits behind a TLS-terminating proxy. The new optional
+`AgentConfig.public_journal_endpoint` field overrides the manifest URL
+when set. Internal peer calls are unaffected.
+
+### Behaviour change
+- None for adopters not setting the new field. Same default URL.
+- Adopters behind a proxy should set `public_journal_endpoint` to the
+  proxy URL (e.g. `"https://my-agent.example.com/adj/v0"`).
+
 ## [0.6.2] - 2026-05-02
 
 ### Fixed — peer fan-out + per-call timeouts

@@ -40,7 +40,14 @@ class AgentManifest:
                 )
                 for k, v in config.authorities.items()
             },
-            journal_endpoint=f"http://{config.domain}:{config.port}/adj/v0",
+            # Default: internal `domain:port` URL, which works for
+            # peer-to-peer calls in the same network. Override with
+            # `config.public_journal_endpoint` when the agent sits behind
+            # a TLS-terminating proxy and external callers need the proxy URL.
+            journal_endpoint=(
+                config.public_journal_endpoint
+                or f"http://{config.domain}:{config.port}/adj/v0"
+            ),
             public_key=config.auth.public_key if config.auth else None,
             trust_level="open",
         )
