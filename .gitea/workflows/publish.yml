@@ -56,7 +56,11 @@ jobs:
             2>&1 | tee /tmp/gitea-upload.log
           STATUS=${PIPESTATUS[0]}
           if [ "$STATUS" -ne 0 ]; then
-            if grep -qiE "already exists|file already|version already" /tmp/gitea-upload.log; then
+            # Gitea twine errors on 409 with just "HTTPError: 409 Conflict"
+            # — no human-readable "already exists" string. We accept any
+            # 409 as an idempotent no-op (the alternative is making
+            # re-runs hard-fail when only one of the two wheels bumped).
+            if grep -qiE "already exists|file already|version already|409 Conflict" /tmp/gitea-upload.log; then
               echo "::notice::Gitea PyPI upload skipped: version already published"
               exit 0
             fi
