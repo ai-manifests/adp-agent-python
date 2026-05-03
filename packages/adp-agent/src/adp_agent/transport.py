@@ -147,6 +147,13 @@ class HttpTransport:
     :meth:`fetch_manifest` and explicitly via :meth:`register_agent`.
     """
 
+    # Per-call timeout for slow peer responses (proposal requests block on
+    # the peer's evaluator, which may be a 5–30s LLM call). Without these,
+    # an unresponsive peer hangs the deliberation indefinitely. Mirrors the
+    # equivalent TS / C# defaults.
+    _PROPOSAL_TIMEOUT = 60.0
+    _FAST_TIMEOUT = 10.0
+
     def __init__(self, client: httpx.AsyncClient, auth: AuthConfig | None = None) -> None:
         self._client = client
         self._auth = auth
@@ -160,7 +167,10 @@ class HttpTransport:
         return peer_auth_headers(self._auth, agent_id)
 
     async def fetch_manifest(self, peer_url: str) -> AgentManifest:
-        res = await self._client.get(f"{peer_url}/.well-known/adp-manifest.json")
+        res = await self._client.get(
+            f"{peer_url}/.well-known/adp-manifest.json",
+            timeout=self._FAST_TIMEOUT,
+        )
         if not res.is_success:
             raise RuntimeError(f"Manifest fetch failed: {peer_url} → {res.status_code}")
         body = res.json()
@@ -178,6 +188,7 @@ class HttpTransport:
             res = await self._client.get(
                 f"{journal_endpoint}/calibration",
                 params={"agent_id": agent_id, "domain": domain},
+                timeout=self._FAST_TIMEOUT,
             )
             if res.is_success:
                 body = res.json()
@@ -216,6 +227,7 @@ class HttpTransport:
             f"{peer_url}/api/propose",
             json=body,
             headers=self._headers_for(peer_url),
+            timeout=self._PROPOSAL_TIMEOUT,
         )
         if not res.is_success:
             raise RuntimeError(f"Proposal request failed: {peer_url} → {res.status_code}")
@@ -246,6 +258,7 @@ class HttpTransport:
                 f"{peer_url}/api/respond-falsification",
                 json=body,
                 headers=self._headers_for(peer_url),
+                timeout=self._PROPOSAL_TIMEOUT,
             )
             if not res.is_success:
                 # Per the spec, a non-responding peer's vote stands unchanged.
@@ -276,6 +289,7 @@ class HttpTransport:
                 f"{peer_url}/adj/v0/entries",
                 json=payload,
                 headers=self._headers_for(peer_url),
+                timeout=self._FAST_TIMEOUT,
             )
         except Exception:
             pass

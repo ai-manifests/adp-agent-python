@@ -5,6 +5,34 @@ All notable changes to `adp-agent` (Python) and `adp-agent-anchor` (Python) are 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-05-02
+
+### Fixed — peer fan-out + per-call timeouts
+
+`PeerDeliberation` previously discovered peers, requested proposals,
+and pushed journal entries **sequentially** with **no per-call timeout**.
+Once any peer ran an LLM evaluator (5–30s per proposal) the deliberation
+collapsed: 8 sequential peers took 2+ minutes, past Gitea webhook
+timeouts, and a single hung peer froze the whole thing forever.
+
+This release:
+- **`HttpTransport` adds explicit per-call timeouts** to every outbound
+  request: 60s for proposal/falsification (LLM-friendly), 10s for
+  manifest, calibration, and journal gossip.
+- **Peer discovery and proposal collection now run in parallel** via
+  `asyncio.gather`. Failed peers are logged and dropped; the
+  deliberation continues with whoever produced a valid proposal
+  (`participation_floor` enforces quorum downstream).
+- **Final journal gossip is also parallel** with `return_exceptions=True`.
+  A peer that's gone away post-proposal no longer blocks distribution
+  to the others.
+
+### Behaviour change
+- Federations with unreachable peers may see proposals dropped where
+  they were previously held indefinitely. This is the spec-correct
+  behaviour — a peer that doesn't respond should not be counted as a
+  participant.
+
 ## [0.6.1] - 2026-05-02
 
 ### Fixed — LLM evaluator: omit `temperature` when caller doesn't set it

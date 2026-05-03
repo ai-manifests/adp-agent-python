@@ -11,6 +11,8 @@ termination) and :mod:`acb_manifest` (pricing, settlement, habit memory).
 """
 from __future__ import annotations
 
+import asyncio
+import sys
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -57,6 +59,7 @@ from adp_manifest.weighting import compute_weight
 from .config import AgentConfig, PeerConfig
 from .contribution import ContributionTracker, compute_load_bearing_agents
 from .journal import RuntimeJournalStore
+from .manifest import AgentManifest
 from .transport import PeerTransport
 
 
@@ -142,11 +145,26 @@ class PeerDeliberation:
         dlb_id = f"dlb_{uuid.uuid4().hex}"
         now = datetime.now(timezone.utc)
 
-        # 1. Discover peers — fetch_manifest also populates the transport's URL→agent_id map
-        for peer in self._peers:
-            manifest = await self._transport.fetch_manifest(peer.url)
-            self._manifests[manifest.agent_id] = manifest
-            self._peer_url_map[manifest.agent_id] = peer.url
+        # 1. Discover peers in parallel — a slow or briefly-unavailable
+        #    peer must not block discovery for the rest of the federation.
+        #    Failed peers are logged and dropped from the participant set.
+        async def _discover(peer_url: str) -> tuple[str, AgentManifest | None, BaseException | None]:
+            try:
+                m = await self._transport.fetch_manifest(peer_url)
+                return (peer_url, m, None)
+            except BaseException as ex:  # noqa: BLE001 — broad catch is intentional
+                return (peer_url, None, ex)
+
+        discovery_results = await asyncio.gather(
+            *(_discover(p.url) for p in self._peers),
+            return_exceptions=False,
+        )
+        for url, manifest, err in discovery_results:
+            if manifest is not None:
+                self._manifests[manifest.agent_id] = manifest
+                self._peer_url_map[manifest.agent_id] = url
+            else:
+                print(f"[deliberation] peer discovery failed for {url}: {err}", file=sys.stderr)
 
         # Self-manifest. The initiator never fetches its own manifest, so
         # register_agent is the only path that binds the self URL to the
@@ -186,18 +204,40 @@ class PeerDeliberation:
             config=AdjDeliberationConfig(max_rounds=3, participation_floor=0.50),
         ))
 
-        # 2. Request proposals from peers
-        for agent_id, manifest in list(self._manifests.items()):
-            resp = await self._transport.request_proposal(self._peer_url_map[agent_id], dlb_id, action, tier)
+        # 2. Request proposals from peers in parallel.
+        #    Sequential proposal collection is the worst hotspot for
+        #    LLM-evaluator peers: each request blocks on the peer's LLM
+        #    call (5–30s), so 8 sequential peers take 2+ minutes. Fanning
+        #    out cuts wall-clock cost to max(peer time), not sum.
+        #    A peer that times out, returns 5xx, or otherwise errors is
+        #    logged and dropped; the deliberation continues with whoever
+        #    produced a valid proposal (participation_floor enforces
+        #    quorum downstream).
+        async def _request_one(agent_id: str, manifest: AgentManifest):
+            try:
+                resp = await self._transport.request_proposal(self._peer_url_map[agent_id], dlb_id, action, tier)
+                domain = next(iter(manifest.domain_authorities.keys()), self._self.decision_classes[0])
+                domain_auth = manifest.domain_authorities.get(domain)
+                authority = domain_auth.authority if domain_auth else 0.5
+                cal = await self._transport.fetch_calibration(manifest.journal_endpoint, agent_id, domain)
+                return (agent_id, resp, domain, authority, cal, None)
+            except BaseException as ex:  # noqa: BLE001
+                return (agent_id, None, "", 0.0, None, ex)
+
+        proposal_results = await asyncio.gather(
+            *(_request_one(aid, mf) for aid, mf in list(self._manifests.items())),
+            return_exceptions=False,
+        )
+        for agent_id, resp, domain, authority, cal, err in proposal_results:
+            if err is not None or resp is None or cal is None:
+                print(
+                    f"[deliberation] peer proposal failed for {agent_id}: {err}",
+                    file=sys.stderr,
+                )
+                continue
             self._proposals.append(resp.proposal)
             self._contribution_tracker.record_proposal(agent_id)
-
-            domain = next(iter(manifest.domain_authorities.keys()), self._self.decision_classes[0])
-            domain_auth = manifest.domain_authorities.get(domain)
-            authority = domain_auth.authority if domain_auth else 0.5
-            cal = await self._transport.fetch_calibration(manifest.journal_endpoint, agent_id, domain)
             self._weights[agent_id] = compute_weight(authority, cal, domain, resp.proposal.stake.magnitude)
-
             self._journal_entries.append(_build_proposal_emitted(dlb_id, resp.proposal, domain))
 
         # Self-proposal — same path as peers, exercises auth round-trip
@@ -364,9 +404,14 @@ class PeerDeliberation:
         # 6. Persist + gossip
         for entry in self._journal_entries:
             self._journal.append(entry)
+        # Push to all peers + self in parallel — best-effort. A peer that's
+        # gone away post-proposal must not block journal distribution to the
+        # others (or to self, which writes locally).
         all_urls = [p.url for p in self._peers] + [self_url]
-        for url in all_urls:
-            await self._transport.push_journal_entries(url, self._journal_entries)
+        await asyncio.gather(
+            *(self._transport.push_journal_entries(url, self._journal_entries) for url in all_urls),
+            return_exceptions=True,
+        )
 
         return PeerDeliberationResult(
             deliberation_id=dlb_id,
