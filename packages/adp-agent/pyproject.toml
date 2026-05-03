@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adp-agent"
-version = "0.6.0"
+version = "0.6.1"
 description = "Reference implementation of the Agent Deliberation Protocol (ADP). Python/FastAPI runtime for agents that deliberate, sign proposals, journal outcomes, and publish signed calibration snapshots."
 readme = "README.md"
 license = "Apache-2.0"

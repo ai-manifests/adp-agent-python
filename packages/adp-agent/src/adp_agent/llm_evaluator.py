@@ -95,10 +95,9 @@ class LlmEvaluator:
             raise RuntimeError("ANTHROPIC_API_KEY not set in environment")
 
         cfg = self._eval_config
-        body = {
+        body: dict[str, Any] = {
             "model": cfg.model,
             "max_tokens": cfg.max_tokens,
-            "temperature": cfg.temperature,
             "system": [
                 {"type": "text", "text": cfg.system_prompt, "cache_control": {"type": "ephemeral"}}
             ],
@@ -112,6 +111,8 @@ class LlmEvaluator:
             "tool_choice": {"type": "tool", "name": "submit_vote"},
             "messages": [{"role": "user", "content": user_message}],
         }
+        if cfg.temperature is not None:
+            body["temperature"] = cfg.temperature
 
         response = await client.post(
             "https://api.anthropic.com/v1/messages",
@@ -143,9 +144,8 @@ class LlmEvaluator:
             raise RuntimeError("OPENAI_API_KEY not set in environment")
 
         cfg = self._eval_config
-        body = {
+        body: dict[str, Any] = {
             "model": cfg.model,
-            "temperature": cfg.temperature,
             "max_completion_tokens": cfg.max_tokens,
             "messages": [
                 {"role": "system", "content": cfg.system_prompt},
@@ -156,6 +156,8 @@ class LlmEvaluator:
                 "json_schema": {"name": "submit_vote", "schema": VOTE_SCHEMA, "strict": True},
             },
         }
+        if cfg.temperature is not None:
+            body["temperature"] = cfg.temperature
 
         response = await client.post(
             "https://api.openai.com/v1/chat/completions",

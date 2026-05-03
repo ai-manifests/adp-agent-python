@@ -78,8 +78,9 @@ class EvaluatorConfig:
     user_template: str | None = None
     # Max tokens for the response.
     max_tokens: int = 1024
-    # Sampling temperature (default 0 — deterministic).
-    temperature: float = 0.0
+    # Sampling temperature. Optional — only sent when set. Newer Anthropic
+    # models reject the parameter even at 0, so leaving it None is safest.
+    temperature: float | None = None
 
 
 @dataclass(frozen=True)

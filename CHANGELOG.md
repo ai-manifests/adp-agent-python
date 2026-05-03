@@ -5,6 +5,20 @@ All notable changes to `adp-agent` (Python) and `adp-agent-anchor` (Python) are 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-05-02
+
+### Fixed — LLM evaluator: omit `temperature` when caller doesn't set it
+
+`0.6.0` always included `temperature` in the request body, defaulting to
+`0.0`. Newer Anthropic models reject the parameter even at `0` with
+`400 invalid_request_error`. The fix: `EvaluatorConfig.temperature` is
+now `float | None` (default `None`); only forwarded when explicitly set.
+
+### Behaviour change
+- `EvaluatorConfig.temperature` type changed from `float` (default `0.0`)
+  to `float | None` (default `None`). Configs without an explicit
+  `temperature` field now produce `None`, not `0.0`.
+
 ## [0.6.0] - 2026-05-02 (anchor lockstep)
 
 ### Changed — `adp-agent-anchor`
